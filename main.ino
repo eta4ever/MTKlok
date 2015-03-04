@@ -13,10 +13,9 @@ LWiFiUDP Udp; // A UDP instance to let us send and receive packets over UDP
 //--------------------------------------------------------------------
 
 
-// пины для последовательного ввода минут, часов и тактирования
-char nByteMin = 2;
-char nByteHour = 3;
-char nCLK = 4;
+// пины для последовательного вывода времени и тактирования
+char nixieData = 2;
+char nixieCLK = 3;
 
 // время
 datetimeInfo currentTime;
@@ -44,10 +43,9 @@ void setup()
 
 
 	// установить режимы выходов
-	pinMode(nByteMin, OUTPUT);
-	pinMode(nByteHour, OUTPUT);
-	pinMode(nCLK, OUTPUT);
-	digitalWrite(nCLK, LOW);
+	pinMode(nixieData, OUTPUT);
+	pinMode(nixieCLK, OUTPUT);
+	digitalWrite(nixieCLK, LOW);
 
         // начальное значение часов
         LDateTime.getTime(&currentTime);
@@ -110,44 +108,33 @@ void loop()
 // вывод времени -----------------------------------------
 void outputTime(datetimeInfo currentTime){
 	
-	char minLow = currentTime.min % 10;
-	char minHigh = currentTime.min / 10;
-	char hourLow = currentTime.hour % 10;
-	char hourHigh = currentTime.hour / 10;
+	// так уж схемотехнически странно получилось. На старших пинах регистров
+	// сидят старшие разряды. Поэтому порядок запихивания битов такой:
+	// старший полубайт часов, младший часов, старший минут, младший минут.
 
-	// так уж схемотехнически странно получилось. В общем, сначала
-	// запихиваем старшие полубайты часов и минут (начиная с младшего бита)
-
-	for (byte counter = 0; counter < 4; counter++)
-	{
-		// подать нужные биты на входы регистров
-		digitalWrite(nByteMin, bitRead(minHigh,counter));
-		digitalWrite(nByteHour, bitRead(hourHigh,counter));
-
-		// такт загрузки
-		delay(1);
-		digitalWrite(nCLK, HIGH);
-		delay(1);
-		digitalWrite(nCLK, LOW);
-		delay(1);
+	char serialHalfBytes[] = {
+		currentTime.hour / 10,
+		currentTime.hour % 10,
+		currentTime.min / 10,
+		currentTime.min % 10,
 	}
 
-	// а потом - младшие полубайты часов и минут (начиная с младшего бита)
-
-	for (byte counter = 0; counter < 4; counter++)
+	for (char halfByteCounter = 0; halfBytecounter < 4; halfBytecounter++)
 	{
-		// подать нужные биты на входы регистров
-		digitalWrite(nByteMin, bitRead(minLow,counter));
-		digitalWrite(nByteHour, bitRead(hourLow,counter));
+		for (char bitCounter = 0; bitCounter < 4; bitCounter++)
+		{
+			//подать нужный бит на вход регистра
+			digitalWrite(nixieData, bitRead(serialHalfBytes[halfBytecounter],bitCounter));
+			
+			// такт загрузки
+			delay(1);
+			digitalWrite(nixieCLK, HIGH);
+			delay(1);
+			digitalWrite(nixieCLK, LOW);
+			delay(1);
 
-		// такт загрузки
-		delay(1);
-		digitalWrite(nCLK, HIGH);
-		delay(1);
-		digitalWrite(nCLK, LOW);
-		delay(1);
+		}
 	}
-
 }
 
 // эффект рандомных цифр по всем разрядам в течение 2 секунд -----------------------
