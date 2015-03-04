@@ -112,19 +112,17 @@ void outputTime(datetimeInfo currentTime){
 	// сидят старшие разряды. Поэтому порядок запихивания битов такой:
 	// старший полубайт часов, младший часов, старший минут, младший минут.
 
-	char serialHalfBytes[] = {
-		currentTime.hour / 10,
-		currentTime.hour % 10,
-		currentTime.min / 10,
-		currentTime.min % 10,
-	}
+	char serialHalfBytes[] = {currentTime.hour / 10,
+							  currentTime.hour % 10,
+							  currentTime.min / 10,
+							  currentTime.min % 10};
 
-	for (char halfByteCounter = 0; halfBytecounter < 4; halfBytecounter++)
+	for (char halfByteCounter = 0; halfByteCounter < 4; halfByteCounter++)
 	{
 		for (char bitCounter = 0; bitCounter < 4; bitCounter++)
 		{
 			//подать нужный бит на вход регистра
-			digitalWrite(nixieData, bitRead(serialHalfBytes[halfBytecounter],bitCounter));
+			digitalWrite(nixieData, bitRead(serialHalfBytes[halfByteCounter],bitCounter));
 			
 			// такт загрузки
 			delay(1);
