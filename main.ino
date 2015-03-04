@@ -8,7 +8,7 @@
 #include <LStorage.h>
 
 //-------------------ДЛЯ WIFI NTP------------------------------------
-char ssid[] = "";  	// название сети, задается в конфиге на SD
+char ssid[] = "";      // название сети, задается в конфиге на SD
 char pass[] = "";   // пароль сети, задается в конфиге на SD
 unsigned int localPort = 2390;      // локальный порт для NTP
 IPAddress timeServer; //  IP адрес NTP-сервера, задается в конфиге на SD
@@ -47,19 +47,19 @@ bool ntpSynced = false;
 
 void setup()
 {
-	
-	// Serial.begin(9600); // для дебага
-	// while(!Serial.available()); //для дебага
+    
+    // Serial.begin(9600); // для дебага
+    // while(!Serial.available()); //для дебага
 
-	//------------ЗАГРУЖАЕМ КОНФИГУ С SD-------------------
-	pinMode(10, OUTPUT); // так в примере было, пока не трогаем
-	LTask.begin();
+    //------------ЗАГРУЖАЕМ КОНФИГУ С SD-------------------
+    pinMode(10, OUTPUT); // так в примере было, пока не трогаем
+    LTask.begin();
     Drv.begin();
 
     //открыть файл для чтения
-	configFile = Drv.open(configPath);
+    configFile = Drv.open(configPath);
     if (configFile) {
-    	// Serial.println("Loading config..."); //дебаг
+        // Serial.println("Loading config..."); //дебаг
         // отправиться в начало
         configFile.seek(0);
         // и читать, пока файл не закончится
@@ -108,8 +108,8 @@ void setup()
         // закрыть файл:
         configFile.close();
     } else {
-    	// в случае проблемы с файлом не делаем ничего
-    	// Serial.println("Loading config FAILED"); //дебаг
+        // в случае проблемы с файлом не делаем ничего
+        // Serial.println("Loading config FAILED"); //дебаг
     }
 
     // Serial.println(nixieConfig.timezone);
@@ -117,38 +117,38 @@ void setup()
     // Serial.println(nixieConfig.password);
     // Serial.println(nixieConfig.timeserver);
 
-	//-------------WIFI------------------------------------
-	// подключиться к сети:
-	LWiFi.begin();
+    //-------------WIFI------------------------------------
+    // подключиться к сети:
+    LWiFi.begin();
 
-	// Тут вот какая штука. LWiFi.connectWPA String не хочет, ему
-	// char подавай. А сделать char сразу в структуре не получилось,
-	// т.к. была какая-то мутная бяка, связанная с длиной cjar в структуре
-	// и длиной буфера при конвертации из String при разборке файла.
-	// Так что, в структуре String, а здесь конвертим, точно зная,
-	// сколько нужно символов.
+    // Тут вот какая штука. LWiFi.connectWPA String не хочет, ему
+    // char подавай. А сделать char сразу в структуре не получилось,
+    // т.к. была какая-то мутная бяка, связанная с длиной cjar в структуре
+    // и длиной буфера при конвертации из String при разборке файла.
+    // Так что, в структуре String, а здесь конвертим, точно зная,
+    // сколько нужно символов.
 
-	char ssid [nixieConfig.ssid.length()];
-	char password [nixieConfig.password.length()];
-	nixieConfig.ssid.toCharArray(ssid,nixieConfig.ssid.length());
-	nixieConfig.password.toCharArray(password,nixieConfig.password.length());
+    char ssid [nixieConfig.ssid.length()];
+    char password [nixieConfig.password.length()];
+    nixieConfig.ssid.toCharArray(ssid,nixieConfig.ssid.length());
+    nixieConfig.password.toCharArray(password,nixieConfig.password.length());
 
-	// Serial.println(ssid);
-	// Serial.println(password);
+    // Serial.println(ssid);
+    // Serial.println(password);
 
-	while (!LWiFi.connectWPA(ssid, password))
-	{
-	  delay(1000);
-	  // Serial.println("Trying Wi-Fi...");
-	}
+    while (!LWiFi.connectWPA(ssid, password))
+    {
+      delay(1000);
+      // Serial.println("Trying Wi-Fi...");
+    }
     delay(10000);
-	Udp.begin(localPort);
-	//----------------------------------------------------
+    Udp.begin(localPort);
+    //----------------------------------------------------
 
-	// установить режимы выходов
-	pinMode(nixieData, OUTPUT);
-	pinMode(nixieCLK, OUTPUT);
-	digitalWrite(nixieCLK, LOW);
+    // установить режимы выходов
+    pinMode(nixieData, OUTPUT);
+    pinMode(nixieCLK, OUTPUT);
+    digitalWrite(nixieCLK, LOW);
 
         // начальное значение часов
         LDateTime.getTime(&currentTime);
@@ -160,9 +160,9 @@ void setup()
         // начальная NTP-синхронизация, долбиться до победного
         bool sync_success = NTPsync();
         while (!sync_success){
-        	delay(10000);
-        	// Serial.println("Trying NTP...");
-        	sync_success = NTPsync();
+            delay(10000);
+            // Serial.println("Trying NTP...");
+            sync_success = NTPsync();
         }
 
 
@@ -170,99 +170,99 @@ void setup()
 
 void loop()
 {
-	displayingMin = currentTime.min; // сохранить отображаемую минуту
-	outputTime(currentTime); // вывести время
+    displayingMin = currentTime.min; // сохранить отображаемую минуту
+    outputTime(currentTime); // вывести время
 
-	// пока отображаемая минута совпадает с реальной, проверять реальные раз в секунду
-	while( displayingMin == currentTime.min )
-	{
-		LDateTime.getTime(&currentTime); // прочитать время в переменную currentTime	
-		delay(1000);
-	}
-	
-	// раз в 10 минут один раз прокрутить эффект рандомных цифр
-	if ( ( ( (currentTime.min % 10) == 5) ) && !effectDisplayed ){
-		digitShuffle();
-		effectDisplayed = true;
-	}
-	
-	if ( (currentTime.min % 10) == 1){
-		effectDisplayed = false;  
-	}
+    // пока отображаемая минута совпадает с реальной, проверять реальные раз в секунду
+    while( displayingMin == currentTime.min )
+    {
+        LDateTime.getTime(&currentTime); // прочитать время в переменную currentTime    
+        delay(1000);
+    }
+    
+    // раз в 10 минут один раз прокрутить эффект рандомных цифр
+    if ( ( ( (currentTime.min % 10) == 5) ) && !effectDisplayed ){
+        digitShuffle();
+        effectDisplayed = true;
+    }
+    
+    if ( (currentTime.min % 10) == 1){
+        effectDisplayed = false;  
+    }
 
-	// раз в 1 час пытаемся синхронизировать время, 5 попыток
-	if ( ( ( currentTime.min == 0) ) && !ntpSynced ){
-		bool sync_success = NTPsync();
-		for (char tryCount = 0; tryCount<5; tryCount++)
-		{
-			sync_success = NTPsync();
-			if (sync_success) break;
-			delay(2500);
-		}
-		ntpSynced = true;
-	}
-	
-	if ( currentTime.min == 1){
-		ntpSynced = false;  
-	}
+    // раз в 1 час пытаемся синхронизировать время, 5 попыток
+    if ( ( ( currentTime.min == 0) ) && !ntpSynced ){
+        bool sync_success = NTPsync();
+        for (char tryCount = 0; tryCount<5; tryCount++)
+        {
+            sync_success = NTPsync();
+            if (sync_success) break;
+            delay(2500);
+        }
+        ntpSynced = true;
+    }
+    
+    if ( currentTime.min == 1){
+        ntpSynced = false;  
+    }
 
 
 }
 
 // вывод времени -----------------------------------------
 void outputTime(datetimeInfo currentTime){
-	
-	// так уж схемотехнически странно получилось. На старших пинах регистров
-	// сидят старшие разряды. Поэтому порядок запихивания битов такой:
-	// старший полубайт часов, младший часов, старший минут, младший минут.
+    
+    // так уж схемотехнически странно получилось. На старших пинах регистров
+    // сидят старшие разряды. Поэтому порядок запихивания битов такой:
+    // старший полубайт часов, младший часов, старший минут, младший минут.
 
-	char serialHalfBytes[] = {currentTime.hour / 10,
-							  currentTime.hour % 10,
-							  currentTime.min / 10,
-							  currentTime.min % 10};
+    char serialHalfBytes[] = {currentTime.hour / 10,
+                              currentTime.hour % 10,
+                              currentTime.min / 10,
+                              currentTime.min % 10};
 
-	for (char halfByteCounter = 0; halfByteCounter < 4; halfByteCounter++)
-	{
-		for (char bitCounter = 0; bitCounter < 4; bitCounter++)
-		{
-			//подать нужный бит на вход регистра
-			digitalWrite(nixieData, bitRead(serialHalfBytes[halfByteCounter],bitCounter));
-			
-			// такт загрузки
-			delay(1);
-			digitalWrite(nixieCLK, HIGH);
-			delay(1);
-			digitalWrite(nixieCLK, LOW);
-			delay(1);
+    for (char halfByteCounter = 0; halfByteCounter < 4; halfByteCounter++)
+    {
+        for (char bitCounter = 0; bitCounter < 4; bitCounter++)
+        {
+            //подать нужный бит на вход регистра
+            digitalWrite(nixieData, bitRead(serialHalfBytes[halfByteCounter],bitCounter));
+            
+            // такт загрузки
+            delay(1);
+            digitalWrite(nixieCLK, HIGH);
+            delay(1);
+            digitalWrite(nixieCLK, LOW);
+            delay(1);
 
-		}
-	}
+        }
+    }
 }
 
 // эффект рандомных цифр по всем разрядам в течение 2 секунд -----------------------
 void digitShuffle(){
-	
-	datetimeInfo fakeTime;
+    
+    datetimeInfo fakeTime;
 
-	for (char iter=0; iter<20; iter++){
-		fakeTime.hour=random(100);
-		fakeTime.min=random(100);
-		outputTime(fakeTime);
-		delay(100);    
-	}
+    for (char iter=0; iter<20; iter++){
+        fakeTime.hour=random(100);
+        fakeTime.min=random(100);
+        outputTime(fakeTime);
+        delay(100);    
+    }
 }
 
 // эффект прокрутки цифр по всем разрядам от 0 до 10 в течение секунды-------------
 void digitCycle(){
-	
-	datetimeInfo fakeTime;
+    
+    datetimeInfo fakeTime;
 
-	for (char iter=0; iter<10; iter++){
-		fakeTime.hour=iter*10 + iter;
-		fakeTime.min=fakeTime.hour;
-		outputTime(fakeTime);
-		delay(100);    
-	}
+    for (char iter=0; iter<10; iter++){
+        fakeTime.hour=iter*10 + iter;
+        fakeTime.min=fakeTime.hour;
+        outputTime(fakeTime);
+        delay(100);    
+    }
 }
 
 
