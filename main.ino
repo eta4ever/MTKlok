@@ -36,7 +36,6 @@ char nixieCLK = 3;
 
 // время
 datetimeInfo currentTime;
-char timezone = 3; // часовой пояс
 char displayingMin; // хранить отображаемую минуту, сравнивать с текущей, при несовпадении обновлять
 
 // флаг показанного эффекта
@@ -315,7 +314,7 @@ bool NTPsync(){
     unsigned long epoch = secsSince1900 - seventyYears;
     // и вытащить из Unix Time часы и минуты с поправкой на часовой пояс,
     // с коррекцией перехода через полночь при прибавлении пояса (%24)
-    currentTime.hour = ((epoch  % 86400L) / 3600 + timezone) % 24; // (86400 секунд в дне)
+    currentTime.hour = ((epoch  % 86400L) / 3600 + nixieConfig.timezone) % 24; // (86400 секунд в дне)
     currentTime.min = (epoch  % 3600) / 60; // (3600 секунд в минуте)
     
     LDateTime.setTime(&currentTime); // установить время
