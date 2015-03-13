@@ -1,1 +1,0 @@
-avrdude.exe -c usbasp -p m8 -U lfuse:w:0xee:m -U hfuse:w:0xd9:m 
